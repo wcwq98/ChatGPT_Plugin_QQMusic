@@ -9,6 +9,9 @@
 ```
 !plugin get <插件发布仓库地址>
 ```
+```
+!plugin get https://host.wxgwxha.eu.org/https://github.com/wcwq98/ChatGPT_Plugin_QQMusic
+```
 或查看详细的[插件安装说明]([https://github.com/RockChinQ/QChatGPT/wiki/5-%E6%8F%92%E4%BB%B6%E4%BD%BF%E7%94%A8](https://qchatgpt.rockchin.top/posts/PluginsUse/plugin_network.html))
 
 ## 使用
