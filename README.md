@@ -1,7 +1,6 @@
 ## 致谢：
 
-[zzseki的音乐插件](https://github.com/zzseki/QChatGPT_Plugin_Music） 和  
-[星之阁API](https://api.xingzhige.com)
+[zzseki的音乐插件](https://github.com/zzseki/QChatGPT_Plugin_Music) 和 [星之阁API](https://api.xingzhige.com)
 
 ## 安装
 
