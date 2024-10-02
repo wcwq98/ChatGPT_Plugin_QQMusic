@@ -1,0 +1,2 @@
+# ChatGPT_Plugin_QQMusic
+QChatGPT的插件，调用QQ音乐api以语音方式播放音乐
