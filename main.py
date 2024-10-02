@@ -133,7 +133,8 @@ class QQMusic(BasePlugin):
             except httpx.HTTPStatusError as e:
                 self.logger.error(f"获取音乐直链失败: {str(e)}")
                 return None
-
+                
+      # 插件卸载时触发
     def __del__(self):
         if hasattr(self, 'folder_path'):
             shutil.rmtree(self.folder_path)
