@@ -15,13 +15,42 @@ from graiax import silkcoder
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# 获取当前脚本的目录
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# 从 config.py 或 config.txt 读取敏感信息
+uin = None
+skey = None
+
+try:
+    from .config import uin, skey
+except ImportError:
+    try:
+        with open(os.path.join(current_dir, 'config.txt'), 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                key, value = line.strip().split('=')
+                if key == 'uin':
+                    uin = value
+                elif key == 'skey':
+                    skey = value
+    except FileNotFoundError:
+        logger.error("配置文件 config.txt 未找到，请确保其存在并位于正确的目录中。")
+    except Exception as e:
+        logger.error(f"读取配置文件时发生错误: {str(e)}")
+
+if not uin or not skey:
+    raise ValueError("UIN and SKEY must be set in config.py or config.txt")
+
 # 注册插件
 @register(name="QQMusic", description="QQ音乐插件", version="0.1", author="wcwq98")
 class QQMusic(BasePlugin):
     def __init__(self, host: APIHost):
-        self.uin = "YOUR_UIN"  # 请将这里的'YOUR_UIN'替换为你实际获取的uin
-        self.skey = "YOUR_SKEY"  # 请将这里的'YOUR_SKEY'替换为你实际获取的skey
+        self.uin = uin
+        self.skey = skey
         self.logger = logger
+        self.temp_folder = os.path.join(current_dir, "temp")
+        os.makedirs(self.temp_folder, exist_ok=True)
 
     @handler(PersonNormalMessageReceived)
     async def person_normal_message_received(self, ctx: EventContext):
@@ -43,9 +72,9 @@ class QQMusic(BasePlugin):
             src = await self.get_music_src(music_name)
             if src:
                 self.logger.info(f"获取到音乐直链: {src}")
-                mp3_path = os.path.join(os.path.dirname(__file__), "temp", "temp.mp3")
-                wav_path = os.path.join(os.path.dirname(__file__), "temp", "temp.wav")
-                flac_path = os.path.join(os.path.dirname(__file__), "temp", "temp.flac")
+                mp3_path = os.path.join(self.temp_folder, "temp.mp3")
+                wav_path = os.path.join(self.temp_folder, "temp.wav")
+                flac_path = os.path.join(self.temp_folder, "temp.flac")
                 if re.search("flac", src):
                     file_type = "flac"
                     save_path = flac_path
@@ -82,13 +111,13 @@ class QQMusic(BasePlugin):
             return False
 
     def convert_to_silk(self, save_path: str) -> str:
-        temp_folder = os.path.join(os.path.dirname(__file__), "temp")
-        silk_path = os.path.join(temp_folder, Path(save_path).stem + ".silk")
+        temp_folder = os.path.join(current_dir, "temp")
+        silk_path = os.path.join(temp_folder, "temp.silk")
         wav_path = save_path
 
         if save_path.endswith(".mp3"):
             self.logger.info(f"正在将 MP3 文件 {save_path} 转换为 WAV")
-            wav_path = os.path.join(temp_folder, Path(save_path).stem + ".wav")
+            wav_path = os.path.join(temp_folder, "temp.wav")
             # 将 mp3 转换为 wav
             audio = AudioSegment.from_mp3(save_path)
             audio.export(wav_path, format="wav")
@@ -96,7 +125,7 @@ class QQMusic(BasePlugin):
 
         elif save_path.endswith(".flac"):
             self.logger.info(f"正在将 flac 文件 {save_path} 转换为 WAV")
-            wav_path = os.path.join(temp_folder, Path(save_path).stem + ".wav")
+            wav_path = os.path.join(temp_folder, "temp.wav")
             # 将 flac 转换为 wav
             audio = AudioSegment.from_file(save_path, format="flac")
             audio.export(wav_path, format="wav")
@@ -134,8 +163,8 @@ class QQMusic(BasePlugin):
             except httpx.HTTPStatusError as e:
                 self.logger.error(f"获取音乐直链失败: {str(e)}")
                 return None
-                
+
     # 插件卸载时触发
     def __del__(self):
-        if hasattr(self, 'folder_path'):
-            shutil.rmtree(self.folder_path)
+        if hasattr(self, 'temp_folder'):
+            shutil.rmtree(self.temp_folder, ignore_errors=True)
