@@ -34,7 +34,8 @@ class QQMusic(BasePlugin):
     async def handle_message(self, ctx: EventContext):
         receive_text = ctx.event.text_message
         self.logger.info(f"收到消息: {receive_text}")
-        MUSIC_PATTERN = re.compile(r"播放音乐：(.+)")
+        # 修改正则表达式以支持中文和英文冒号
+        MUSIC_PATTERN = re.compile(r"播放音乐[:：](.+)")
         match = MUSIC_PATTERN.search(receive_text)
         if match:
             music_name = match.group(1)
@@ -134,7 +135,7 @@ class QQMusic(BasePlugin):
                 self.logger.error(f"获取音乐直链失败: {str(e)}")
                 return None
                 
-      # 插件卸载时触发
+    # 插件卸载时触发
     def __del__(self):
         if hasattr(self, 'folder_path'):
             shutil.rmtree(self.folder_path)
